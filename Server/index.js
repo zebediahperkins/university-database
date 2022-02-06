@@ -14,12 +14,12 @@ app.post('/admin/register-student', jsonParser, (req, res) => { //Expects x-api-
     const apiKeyHash = crypto.createHash('sha256').update(req.header('x-api-key')).digest('hex');
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
-            if (!student.admin) res.send(`Error: User ${student.username} may not access this content`);
+            if (!student.admin) res.json({ message: `Error: User ${student.username} may not access this content` });
             else {
                 const username = req.body.username;
                 const password = req.body.password;
                 Student.findOne({ username: username }, (_err, student) => {
-                    if (student) res.send(`Student ${student.username} already exists`);
+                    if (student) res.json({ message: `Error: Student ${student.username} already exists` });
                     else {
                         bcrypt.hash(password, 10, (_err, hash) => {
                             new Student({
@@ -45,12 +45,12 @@ app.post('/admin/register-student', jsonParser, (req, res) => { //Expects x-api-
                                 }
                             }).save();
                         });
-                        res.send(`Succcess! Student ${username} was registered!`);
+                        res.json({ message: `Student ${username} was registered!` });
                     }
                 });
             }
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -58,10 +58,10 @@ app.post('/admin/register-course', jsonParser, (req, res) => { //Expects x-api-k
     const apiKeyHash = crypto.createHash('sha256').update(req.header('x-api-key')).digest('hex');
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
-            if (!student.admin) res.send(`Error: User ${student.username} may not access this content`);
+            if (!student.admin) res.json({ message: `Error: User ${student.username} may not access this content` });
             else {
                 Course.findOne({ title: req.body.title }, (_err, course) => {
-                    if (course) res.send(`Error: Course ${req.body.title} already exists in the courses directory!`);
+                    if (course) res.json({ message: `Error: Course ${req.body.title} already exists in the courses directory!` });
                     else {
                         new Course({
                             title: req.body.title,
@@ -69,12 +69,12 @@ app.post('/admin/register-course', jsonParser, (req, res) => { //Expects x-api-k
                             prerequisites: req.body.prerequisites,
                             eligible: req.body.eligible
                         }).save();
-                        res.send(`Success! ${req.body.title} has been added to the courses directory!`);
+                        res.json({ message: `${req.body.title} has been added to the courses directory!` });
                     }
                 });
             }
         }
-        else res.send('Error: Invalid API key');
+        else res.json('Error: Invalid API key');
     });
 });
 
@@ -82,14 +82,14 @@ app.post('/admin/update-student', jsonParser, (req, res) => { //Expects x-api-ke
     const apiKeyHash = crypto.createHash('sha256').update(req.header('x-api-key')).digest('hex');
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
-            if (!student.admin) res.send(`Error: User ${student.username} may not access this content`);
+            if (!student.admin) res.json({ message: `Error: User ${student.username} may not access this content` });
             else {
                 const username = req.body.username;
                 const password = req.body.password;
-                if (!username) res.send('Error: Please specify student username');
+                if (!username) res.json({ message: 'Error: Please specify student username' });
                 else {
                     Student.findOne({ username: username }, (_err, student) => {
-                        if (!student) res.send(`Student ${username} does not exist!`);
+                        if (!student) res.json({ message: `Student ${username} does not exist!` });
                         else {
                             if (req.body.username) student.username = req.body.username;
                             if (password) {
@@ -98,9 +98,9 @@ app.post('/admin/update-student', jsonParser, (req, res) => { //Expects x-api-ke
                                 });
                             }
                             if (req.body.major) student.academics.major = req.body.major;
-                            if (req.body.coursesToEnroll) student.academics.courses.push(req.body.coursesToEnroll);
-                            if (req.body.completedCourses) student.academics.push(completedCourses);
-                            if (req.body.holds) student.academics.holds.push(req.body.holds);
+                            if (req.body.courseToEnroll) student.academics.courses.push(req.body.courseToEnroll);
+                            if (req.body.completedCourse) student.academics.push(completedCourse);
+                            if (req.body.hold) student.academics.holds.push(req.body.hold);
                             if (req.body.clearHolds) student.academics.holds = [];
                             if (req.body.enrolledCredits) student.academics.credits = req.body.enrolledCredits;
                             if (req.body.totalCredits) student.academics.totalCredits = req.body.totalCredits;
@@ -110,13 +110,13 @@ app.post('/admin/update-student', jsonParser, (req, res) => { //Expects x-api-ke
                             if (req.body.lastName) student.personalInfo.lastName = req.body.lastName;
                             if (req.body.address) student.personalInfo.address = req.body.address;
                             student.save();
-                            res.send(`Succcess! Student ${username} was updated!`);
+                            res.json({ message: `Student ${username}'s records were updated` });
                         }
                     });
                 }
             }
         }
-        else res.send('Error: Invalid API key');
+        else res.json('Error: Invalid API key');
     });
 });
 
@@ -126,16 +126,16 @@ app.post('/login', jsonParser, (req, res) => { //Expects username and password i
     Student.findOne({ username: username }, (_err, student) => {
         if (student) {
             bcrypt.compare(password, student.password, (_err, valid) => {
-                if (valid || password === student.password) {
+                if (valid) {
                     const apiKey = crypto.randomBytes(20).toString('hex');
                     student.apiKey = crypto.createHash('sha256').update(apiKey).digest('hex');
                     student.save();
-                    res.json({ apiKey: apiKey });
+                    res.json({ message: `User ${username} has been logged in`, apiKey: apiKey });
                 }
-                else res.json({ apiKey: '' });
+                else res.json({ message: 'Error: Invalid password', apiKey: '' });
             });
         }
-        else res.json({ apiKey: '' });
+        else res.json({ message: 'Error: Invalid username', apiKey: '' });
     });
 });
 
@@ -145,9 +145,9 @@ app.post('/logout', (req, res) => { //Expects x-api-key in header
         if (student) {
             student.apiKey = '';
             student.save();
-            res.send(`Success! Student ${student.username} has been logged out`);
+            res.json({ message: `Student ${student.username} has been logged out` });
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -159,10 +159,10 @@ app.post('/reset-password', jsonParser, (req, res) => { //Expects x-api-key in h
             bcrypt.hash(password, 10, (_err, hash) => {
                 student.password = hash;
                 student.save();
-                res.send(`Success! Student ${student.username}'s password has been updated`);
+                res.json({ message: `Student ${student.username}'s password has been updated` });
             });
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -172,12 +172,14 @@ app.get('/profile', (req, res) => { //Expects x-api-key in header
         if (student) {
             if (student.admin) {
                 res.json({
+                    message: 'Grabbed admin profile',
                     username: student.username,
                     admin: student.admin
                 });
             }
             else {
                 res.json({
+                    message: 'Grabbed student profile',
                     username: student.username,
                     academics: student.academics,
                     finances: student.finances,
@@ -186,7 +188,7 @@ app.get('/profile', (req, res) => { //Expects x-api-key in header
             }
 
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -195,11 +197,21 @@ app.get('/view-courses', (req, res) => { //Expects x-api-key in header
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
             Course.find({}, (err, courses) => {
-                if (!req.query.eligible) res.json(courses);
-                else res.json(courses.filter(course => course.eligible === req.query.eligible));
+                if (!req.query.eligible) {
+                    res.json({
+                        message: 'Grabbed all courses',
+                        courses: courses
+                    });
+                }
+                else {
+                    res.json({
+                        message: 'Grabbed specified courses',
+                        courses: courses.filter(course => course.eligible === req.query.eligible)
+                    });
+                }
             });
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -207,26 +219,26 @@ app.post('/add-course', jsonParser, (req, res) => { //Expects x-api-key in heade
     const apiKeyHash = crypto.createHash('sha256').update(req.header('x-api-key')).digest('hex');
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
-            if (student.academics.courses.includes(req.body.title)) res.send(`Error: Student ${student.username} already registered for course ${req.body.title}`);
-            else if (student.academics.holds.length > 0) res.send(`Error: Student has ${student.academics.holds.length} registration hold(s)!`);
-            else if (student.academics.courses.length >= 5) res.send('Error: Student has already enrolled in max amount of courses!');
+            if (student.academics.courses.includes(req.body.title)) res.json({ message: `Error: Student ${student.username} already registered for course ${req.body.title}` });
+            else if (student.academics.holds.length > 0) res.json({ message: `Error: Student has ${student.academics.holds.length} registration hold(s)!` });
+            else if (student.academics.courses.length >= 5) res.json({ message: 'Error: Student has already enrolled in max amount of courses!' });
             else {
                 Course.findOne({ title: req.body.title }, (_err, course) => {
-                    if (!course) res.send(`Error: Course ${req.body.title} doesn't exist in the courses directory!`);
-                    else if (course.eligible !== student.academics.major && course.eligible != 'Any') res.send(`Error: Student's major is ${student.academics.major}. This course is only available to students with the major ${course.eligible}.`);
+                    if (!course) res.json({ message: `Error: Course ${req.body.title} doesn't exist in the courses directory!` });
+                    else if (course.eligible !== student.academics.major && course.eligible != 'Any') res.json({ message: `Error: Student's major is ${student.academics.major}. This course is only available to students with the major ${course.eligible}.` });
                     else if (course.prerequisites.reduce((acc, e) => acc && student.academics.completedCourses.includes(e), true)) {
                         student.academics.courses.push(course.title);
                         student.academics.credits += course.credits;
                         student.academics.totalCredits += course.credits;
                         student.finances.totalBill += 445.73 * course.credits;
                         student.save();
-                        res.send(`Success! Student ${student.username} has been registered in course ${course.title}`);
+                        res.json({ message: `Student ${student.username} has been registered in course ${course.title}` });
                     }
-                    else res.send(`Error: Student has not satisfied all prerequisites for ${req.body.title}!`);
+                    else res.json({ message: `Error: Student has not satisfied all prerequisites for ${req.body.title}!` });
                 });
             }
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
@@ -234,20 +246,20 @@ app.post('/drop-course', jsonParser, (req, res) => { //Expects x-api-key in head
     const apiKeyHash = crypto.createHash('sha256').update(req.header('x-api-key')).digest('hex');
     Student.findOne({ apiKey: apiKeyHash }, (_err, student) => {
         if (student) {
-            if (!student.academics.courses.includes(req.body.title)) res.send(`Error: Student ${student.username} is not registered for course ${req.body.title}`);
+            if (!student.academics.courses.includes(req.body.title)) res.json({ message: `Error: Student ${student.username} is not registered for course ${req.body.title}` });
             else {
                 Course.findOne({ title: req.body.title }, (_err, course) => {
-                    if (!course) res.send(`Error: Course ${req.body.title} doesn't exist in the courses directory!`);
+                    if (!course) res.json({ message: `Error: Course ${req.body.title} doesn't exist in the courses directory!` });
                     student.academics.courses = student.academics.courses.filter(item => item !== course.title);
                     student.academics.credits -= course.credits;
                     student.academics.totalCredits -= course.credits;
                     student.finances.totalBill -= 445.73 * course.credits;
                     student.save();
-                    res.send(`Success! Student ${student.username} has dropped course ${course.title}`);
+                    res.json({ message: `Student ${student.username} has dropped course ${course.title}` });
                 });
             }
         }
-        else res.send('Error: Invalid API key');
+        else res.json({ message: 'Error: Invalid API key' });
     });
 });
 
