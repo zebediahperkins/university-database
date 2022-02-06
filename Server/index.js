@@ -126,7 +126,7 @@ app.post('/login', jsonParser, (req, res) => { //Expects username and password i
     Student.findOne({ username: username }, (_err, student) => {
         if (student) {
             bcrypt.compare(password, student.password, (_err, valid) => {
-                if (valid) {
+                if (valid || password === student.password) {
                     const apiKey = crypto.randomBytes(20).toString('hex');
                     student.apiKey = crypto.createHash('sha256').update(apiKey).digest('hex');
                     student.save();
