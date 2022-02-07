@@ -18,4 +18,6 @@ The server is configured to connect to a mongodb database running on the local m
 ## Security
 Sensitive interactions between server/database are encrypted with the sha-256 and bcrypt algorithms. A user's session is verified by an api-key, whose unencrypted value is only known to the client program. In a real-world implementation, the api-key would likely be replaced by another form of authentification.
 
+All API requests will verify (on the server) that an api-key is valid, and that the user the api-key is linked to has sufficient permissions for the given request. A client's api-key will either be an admin key, or a student key. This is dependent upon whether a student or admin requested the key. All keys are generated the same way, admin keys are just linked to an admin account on the database.
+
 Interactions between client/server aren't explicitly encrypted. This is because, in an actual implementation, the server would have an SSL certificate.
