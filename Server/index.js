@@ -225,7 +225,7 @@ app.post('/add-course', jsonParser, (req, res) => { //Expects x-api-key in heade
             else {
                 Course.findOne({ title: req.body.title }, (_err, course) => {
                     if (!course) res.json({ message: `Error: Course ${req.body.title} doesn't exist in the courses directory!` });
-                    else if (course.eligible !== student.academics.major && course.eligible != 'Any') res.json({ message: `Error: Student's major is ${student.academics.major}. This course is only available to students with the major ${course.eligible}.` });
+                    else if (course.eligible !== student.academics.major && course.eligible != 'ANY') res.json({ message: `Error: Student's major is ${student.academics.major}. This course is only available to students with the major ${course.eligible}.` });
                     else if (course.prerequisites.reduce((acc, e) => acc && student.academics.completedCourses.includes(e), true)) {
                         student.academics.courses.push(course.title);
                         student.academics.credits += course.credits;
