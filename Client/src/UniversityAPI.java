@@ -1,4 +1,3 @@
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -17,6 +16,7 @@ public class UniversityAPI {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
     private static String apiKey = "";
+    public static boolean isLoggedIn() { return apiKey.length() > 0; }
 
     private static HttpResponse<String> post(String path, String body, String... headers) {
         try {
