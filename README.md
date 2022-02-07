@@ -12,7 +12,7 @@ UniversityAPI.registerForCourse("ENG 101");
 
 UniversityAPI.logout();
 ```
-The server receives these requests from a client, and performs some logic to determine whether the request is valid (authented, logically sound, etc). Once the server has finished any logic/database operations necessary, a response is sent back to the client.
+The server receives these requests from a client, and performs some logic to determine whether the request is valid (authentic, logically sound, etc). Once the server has finished any logic/database operations necessary, a response is sent back to the client.
 ## How the server accesses the database
 The server is configured to connect to a mongodb database running on the local machine. The npm package [mongoose](https://mongoosejs.com/docs/) is used to structure `documents` and `collections` before accessing the database.
 ## Security
