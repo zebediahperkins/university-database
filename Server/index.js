@@ -99,7 +99,7 @@ app.post('/admin/update-student', jsonParser, (req, res) => { //Expects x-api-ke
                             }
                             if (req.body.major) student.academics.major = req.body.major;
                             if (req.body.courseToEnroll) student.academics.courses.push(req.body.courseToEnroll);
-                            if (req.body.completedCourse) student.academics.push(completedCourse);
+                            if (req.body.completedCourse) student.academics.completedCourses.push(req.body.completedCourse);
                             if (req.body.hold) student.academics.holds.push(req.body.hold);
                             if (req.body.clearHolds) student.academics.holds = [];
                             if (req.body.enrolledCredits) student.academics.credits = req.body.enrolledCredits;
