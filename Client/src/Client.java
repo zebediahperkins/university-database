@@ -9,8 +9,7 @@ import java.util.Scanner;
 public class Client {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        boolean shouldContinue = true;
-        while (shouldContinue) {
+        while (true) {
             if (!UniversityAPI.isLoggedIn()) {
                 String username, password;
                 System.out.println("----------------------------------");
